@@ -54,7 +54,7 @@ const deleteGoal = asyncHandler(async (req, res) =>{
     res.status(401)
     throw new Error('User not authorized')
   }
-  res.status(200).json({ message: `Delete goal ${req.params.id}` })
+  res.status(200).json({id:req.params.id })
 }
 );
 
