@@ -10,6 +10,7 @@ app.use(bp.json())
 app.use(bp.urlencoded({ extended: false }))
 app.use(errorHandler)
 app.use("/api/goals", require("./routes/goalRoutes"));
+app.use("/api/users", require("./routes/userRoutes"));
 app.listen(port, () =>
   console.log(`Server running on http://localhost:${port}`)
 );
