@@ -28,7 +28,9 @@ export default function Register() {
     if (isSuccess || user) {
       navigate("/");
     }
-    dispatch(reset());
+    return () => {
+      dispatch(reset);
+    };
   }, [isError, isSuccess, message, user, navigate, dispatch]);
   const onChange = (e) => {
     setFormData((prev) => ({
