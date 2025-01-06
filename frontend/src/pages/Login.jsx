@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import { FaSignInAlt } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { Form, Button, Row, Col } from "react-bootstrap";
+import FormContainer from "../components/FormContainer";
 import { toast } from "react-toastify";
-import { login, reset } from "../features/auth/authSlice";
-import Spinner from "../components/Spinner";
+import { useLoginMutation } from "../slices/usersApiSlice";
+import { setCredentials } from "../slices/authSlice";
+import Loader from "../components/Loader";
 
 export default function Login() {
   const [formData, setFormData] = useState({
@@ -15,19 +18,14 @@ export default function Login() {
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { user, isLoading, isError, isSuccess, message } = useSelector(
-    (state) => state.auth
-  );
+  const [login, { isLoading }] = useLoginMutation();
+  const { userInfo } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    if (isError) {
-      toast.error(message);
-    }
-    if (isSuccess || user) {
+    if (userInfo) {
       navigate("/");
     }
-    dispatch(reset());
-  }, [isError, isSuccess, message, user, navigate, dispatch]);
+  }, [userInfo, navigate]);
 
   const onChange = (e) => {
     setFormData((prev) => ({
@@ -35,57 +33,65 @@ export default function Login() {
       [e.target.name]: e.target.value,
     }));
   };
-  const onSubmit = (e) => {
+  const submitHandler = async (e) => {
     e.preventDefault();
+    try {
+      const res = await login({ email, password }).unwrap();
+      dispatch(setCredentials({ ...res }));
+      navigate("/");
+    } catch (err) {
+      toast.error(err?.data?.message || err.error);
+    }
     const userData = {
       email,
       password,
-    }
-    dispatch(login(userData))
+    };
+    dispatch(login(userData));
   };
   return (
     <>
       {isLoading ? (
-        <Spinner />
+        <Loader />
       ) : (
         <>
-          <section className="heading">
-            <h1>
-              <FaSignInAlt /> Login
-            </h1>
-            <p>Login and start!</p>
-          </section>
-          <section className="form">
-            <form onSubmit={onSubmit}>
-              <div className="form-group">
-                <input
+          <FormContainer>
+            <section className="mx-auto text-center heading">
+              <h1>
+                <FaSignInAlt /> Login
+              </h1>
+              <p>Login and start!</p>
+            </section>
+            <Form onSubmit={submitHandler}>
+              <Form.Group className="my-2" controlId="email">
+                <Form.Label>Email Address</Form.Label>
+                <Form.Control
                   type="email"
-                  className="form-control"
-                  id="email"
                   name="email"
                   value={email}
                   placeholder="Enter your email"
                   onChange={onChange}
                 />
-              </div>
-              <div className="form-group">
-                <input
+              </Form.Group>
+              <Form.Group className="my-2" controlId="password">
+                <Form.Label>Password</Form.Label>
+                <Form.Control
                   type="password"
-                  className="form-control"
-                  id="password"
                   name="password"
                   value={password}
                   placeholder="Enter your password"
                   onChange={onChange}
                 />
-              </div>
-              <div className="form-group">
-                <button type="submit" className="btn btn-block">
-                  Submit
-                </button>
-              </div>
-            </form>
-          </section>
+              </Form.Group>
+              <Button type="submit" variant="primary" className="mt-3">
+                Sign In
+              </Button>
+              <Row className="py-3">
+                <Col>
+                  Do not have an account? <Link to="/register">Create one</Link>
+                </Col>
+              </Row>
+            </Form>
+          </FormContainer>
         </>
       )}
     </>
