@@ -1,15 +1,19 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { createGoal } from "../features/goals/goalSlice";
+
 import { Form, Button } from "react-bootstrap";
 import FormContainer from "./FormContainer";
+import { useCreateGoalMutation } from "../slices/goalsApiSlice";
+import { addGoal } from "../slices/goalsSlice";
 
 export default function GoalForm() {
   const [text, setText] = useState("");
   const dispatch = useDispatch();
-  const submitHandler = (e) => {
+  const [createGoal] = useCreateGoalMutation();
+  const submitHandler = async (e) => {
     e.preventDefault();
-    dispatch(createGoal({ text }));
+    const res = await createGoal({ text });
+    dispatch(addGoal(res));
     setText("");
   };
   return (
